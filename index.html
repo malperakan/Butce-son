@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BütçeApp">
+<meta name="theme-color" content="#0a0c10">
+<title>BütçeApp</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0c10;
+  --surface: #13161e;
+  --surface2: #1a1e2a;
+  --surface3: #222738;
+  --accent: #4ade80;
+  --accent-dim: rgba(74,222,128,0.12);
+  --red: #f87171;
+  --red-dim: rgba(248,113,113,0.12);
+  --yellow: #fbbf24;
+  --yellow-dim: rgba(251,191,36,0.12);
+  --blue: #60a5fa;
+  --blue-dim: rgba(96,165,250,0.12);
+  --purple: #a78bfa;
+  --text: #f1f5f9;
+  --text2: #64748b;
+  --text3: #94a3b8;
+  --border: #1e2433;
+  --radius: 20px;
+  --radius-sm: 14px;
+  --nav-h: 74px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+html, body {
+  height: 100%; width: 100%;
+  overflow: hidden;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* ── App Shell ── */
+.app {
+  display: flex; flex-direction: column;
+  height: 100%; max-width: 430px;
+  margin: 0 auto;
+  position: relative;
+}
+
+/* ── Screens ── */
+.screen {
+  display: none; flex: 1;
+  overflow-y: auto; overflow-x: hidden;
+  padding: 0 0 calc(var(--nav-h) + var(--safe-bottom) + 12px);
+  -webkit-overflow-scrolling: touch;
+}
+.screen.active { display: block; }
+.screen::-webkit-scrollbar { display: none; }
+
+/* ── Status bar area ── */
+.status-area {
+  height: env(safe-area-inset-top, 0px);
+  background: var(--bg);
+  flex-shrink: 0;
+}
+
+/* ── Bottom Nav ── */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 100%; max-width: 430px;
+  height: calc(var(--nav-h) + var(--safe-bottom));
+  padding-bottom: var(--safe-bottom);
+  background: rgba(13,16,22,0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  display: flex; align-items: flex-start;
+  padding-top: 8px;
+  z-index: 100;
+}
+.nav-item {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; gap: 4px;
+  padding: 6px 0;
+  cursor: pointer;
+  transition: transform 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  border: none; background: none;
+}
+.nav-item:active { transform: scale(0.9); }
+.nav-icon {
+  width: 42px; height: 42px;
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  transition: all 0.2s;
+  background: transparent;
+}
+.nav-item.active .nav-icon {
+  background: var(--accent-dim);
+}
+.nav-label {
+  font-size: 10px; font-weight: 600;
+  color: var(--text2); letter-spacing: 0.3px;
+  transition: color 0.2s;
+}
+.nav-item.active .nav-label { color: var(--accent); }
+
+/* ── FAB ── */
+.fab {
+  position: fixed;
+  bottom: calc(var(--nav-h) + var(--safe-bottom) + 16px);
+  left: 50%; transform: translateX(-50%);
+  margin-left: 100px;
+  width: 52px; height: 52px;
+  border-radius: 18px;
+  background: var(--accent);
+  border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; color: #0a0c10;
+  box-shadow: 0 8px 24px rgba(74,222,128,0.4);
+  z-index: 101;
+  transition: all 0.2s;
+}
+.fab:active { transform: translateX(-50%) scale(0.92); margin-left:100px; }
+
+/* ── Page Header ── */
+.page-header {
+  padding: 20px 20px 0;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.page-title { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
+.page-sub { font-size: 13px; color: var(--text2); margin-top: 2px; }
+.header-badge {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 50px; padding: 6px 12px;
+  font-size: 12px; color: var(--text3);
+}
+
+/* ── Balance Hero ── */
+.balance-hero {
+  margin: 20px 20px 0;
+  background: linear-gradient(135deg, #1a2a1e 0%, #0f1a24 50%, #1a1a2e 100%);
+  border: 1px solid rgba(74,222,128,0.15);
+  border-radius: 24px;
+  padding: 24px;
+  position: relative; overflow: hidden;
+}
+.balance-hero::before {
+  content: '';
+  position: absolute; top: -40px; right: -40px;
+  width: 180px; height: 180px;
+  background: radial-gradient(circle, rgba(74,222,128,0.15) 0%, transparent 70%);
+}
+.balance-hero::after {
+  content: '';
+  position: absolute; bottom: -30px; left: 20px;
+  width: 120px; height: 120px;
+  background: radial-gradient(circle, rgba(96,165,250,0.1) 0%, transparent 70%);
+}
+.balance-label { font-size: 12px; color: rgba(241,245,249,0.5); font-weight: 500; text-transform: uppercase; letter-spacing: 1px; }
+.balance-amount {
+  font-size: 42px; font-weight: 800;
+  letter-spacing: -1.5px;
+  margin: 6px 0 20px;
+  position: relative; z-index: 1;
+}
+.balance-amount.positive { color: var(--accent); }
+.balance-amount.negative { color: var(--red); }
+.balance-row { display: flex; gap: 12px; position: relative; z-index: 1; }
+.bal-stat {
+  flex: 1; background: rgba(255,255,255,0.05);
+  border-radius: 14px; padding: 12px;
+}
+.bal-stat-label { font-size: 10px; color: rgba(241,245,249,0.4); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.bal-stat-val { font-size: 17px; font-weight: 800; margin-top: 4px; }
+.bal-stat-val.g { color: var(--accent); }
+.bal-stat-val.r { color: var(--red); }
+
+/* ── Budget Ring ── */
+.budget-card {
+  margin: 14px 20px 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  display: flex; align-items: center; gap: 16px;
+}
+.ring-wrap { position: relative; width: 72px; height: 72px; flex-shrink: 0; }
+.ring-wrap svg { transform: rotate(-90deg); }
+.ring-bg { fill: none; stroke: var(--surface2); stroke-width: 6; }
+.ring-fill { fill: none; stroke-width: 6; stroke-linecap: round; transition: stroke-dashoffset 0.8s cubic-bezier(0.4,0,0.2,1); }
+.ring-text {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+.ring-pct { font-size: 15px; font-weight: 800; }
+.ring-sub-text { font-size: 8px; color: var(--text2); font-weight: 600; }
+.budget-info { flex: 1; }
+.budget-info-title { font-size: 14px; font-weight: 700; }
+.budget-info-sub { font-size: 12px; color: var(--text2); margin-top: 3px; }
+.budget-remaining { font-size: 18px; font-weight: 800; margin-top: 6px; }
+
+/* ── Section ── */
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 20px 12px;
+}
+.section-title { font-size: 16px; font-weight: 700; }
+.section-link { font-size: 13px; color: var(--accent); font-weight: 600; background: none; border: none; cursor: pointer; }
+
+/* ── Mini TX card ── */
+.tx-mini-list { display: flex; flex-direction: column; gap: 8px; padding: 0 20px; }
+.tx-card {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  transition: all 0.15s;
+  animation: fadeUp 0.3s ease;
+}
+@keyframes fadeUp {
+  from { opacity:0; transform: translateY(8px); }
+  to { opacity:1; transform: translateY(0); }
+}
+.tx-card:active { transform: scale(0.98); background: var(--surface2); }
+.tx-icon-wrap {
+  width: 44px; height: 44px;
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0;
+}
+.tx-card-info { flex: 1; min-width: 0; }
+.tx-card-name { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tx-card-meta { font-size: 12px; color: var(--text2); margin-top: 2px; }
+.tx-card-amount { font-size: 15px; font-weight: 800; flex-shrink: 0; }
+.tx-card-amount.pos { color: var(--accent); }
+.tx-card-amount.neg { color: var(--red); }
+
+/* ── Reminder card ── */
+.rem-card {
+  margin: 0 20px 10px;
+  display: flex; align-items: center; gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  animation: fadeUp 0.3s ease;
+  transition: all 0.15s;
+}
+.rem-card.urgent { border-color: rgba(248,113,113,0.3); background: rgba(248,113,113,0.05); }
+.rem-card.soon { border-color: rgba(251,191,36,0.3); background: rgba(251,191,36,0.04); }
+.rem-card.done-card { opacity: 0.45; }
+.rem-icon {
+  width: 44px; height: 44px; border-radius: 14px;
+  background: var(--surface2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0;
+}
+.rem-body { flex: 1; min-width: 0; }
+.rem-title { font-size: 14px; font-weight: 600; }
+.rem-title.done-text { text-decoration: line-through; }
+.rem-date { font-size: 11px; color: var(--text2); margin-top: 3px; }
+.rem-amount { font-size: 13px; font-weight: 700; color: var(--yellow); margin-top: 3px; }
+.rem-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.urgency-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+}
+.check-btn {
+  width: 28px; height: 28px; border-radius: 9px;
+  border: 2px solid var(--border);
+  background: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; transition: all 0.2s;
+  color: transparent;
+}
+.check-btn.checked { background: var(--accent); border-color: var(--accent); color: #0a0c10; }
+
+/* ── Bottom Sheet ── */
+.sheet-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 200;
+  backdrop-filter: blur(4px);
+}
+.sheet-overlay.open { display: flex; align-items: flex-end; justify-content: center; animation: fadeIn 0.2s; }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+.sheet {
+  background: var(--surface);
+  border-radius: 28px 28px 0 0;
+  width: 100%; max-width: 430px;
+  padding: 0 0 calc(24px + var(--safe-bottom));
+  max-height: 92vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+.sheet::-webkit-scrollbar { display: none; }
+.sheet-handle {
+  width: 40px; height: 4px;
+  background: var(--border); border-radius: 2px;
+  margin: 12px auto 0;
+}
+.sheet-title {
+  font-size: 18px; font-weight: 800;
+  padding: 20px 24px 0; letter-spacing: -0.3px;
+}
+
+/* ── Form in sheet ── */
+.form-section { padding: 20px 24px 0; }
+.form-label { font-size: 12px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; display: block; }
+.form-input {
+  width: 100%;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  color: var(--text);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 16px; /* prevents zoom on iOS */
+  outline: none; transition: border-color 0.2s;
+  -webkit-appearance: none;
+}
+.form-input:focus { border-color: var(--accent); }
+.form-input::placeholder { color: var(--text2); }
+.form-input option { background: var(--surface2); }
+.form-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
+
+/* Type toggle */
+.type-toggle { display: flex; gap: 8px; margin-bottom: 0; }
+.type-btn {
+  flex: 1; padding: 14px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border);
+  background: var(--surface2);
+  color: var(--text2);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 15px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s;
+}
+.type-btn.sel-expense { background: var(--red-dim); border-color: var(--red); color: var(--red); }
+.type-btn.sel-income { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+
+/* Submit btn */
+.submit-btn {
+  margin: 20px 24px 0;
+  width: calc(100% - 48px);
+  padding: 16px;
+  background: var(--accent);
+  color: #0a0c10;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 16px; font-weight: 800;
+  border: none; border-radius: var(--radius-sm);
+  cursor: pointer; transition: all 0.2s;
+  letter-spacing: -0.2px;
+}
+.submit-btn:active { transform: scale(0.97); }
+
+/* ── Stats row ── */
+.stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; padding: 14px 20px 0; }
+.stat-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 12px;
+  text-align: center;
+}
+.stat-box-val { font-size: 17px; font-weight: 800; }
+.stat-box-label { font-size: 10px; color: var(--text2); margin-top: 3px; font-weight: 600; }
+
+/* ── Category grid ── */
+.cat-grid { padding: 0 20px; display: flex; flex-direction: column; gap: 10px; }
+.cat-row {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+}
+.cat-emoji-box {
+  width: 40px; height: 40px; border-radius: 12px;
+  background: var(--surface2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.cat-row-info { flex: 1; }
+.cat-row-name { font-size: 13px; font-weight: 600; }
+.cat-bar-wrap { height: 4px; background: var(--surface2); border-radius: 2px; margin-top: 6px; }
+.cat-bar-fill { height: 100%; border-radius: 2px; transition: width 0.6s ease; }
+.cat-row-amt { font-size: 14px; font-weight: 800; flex-shrink: 0; }
+
+/* ── Budget screen ── */
+.budget-big-card {
+  margin: 14px 20px 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+.big-num { font-size: 32px; font-weight: 800; letter-spacing: -1px; }
+.prog-bar-big { height: 10px; background: var(--surface2); border-radius: 5px; margin: 14px 0 8px; overflow: hidden; }
+.prog-fill-big { height: 100%; border-radius: 5px; transition: width 0.7s ease; }
+.prog-labels { display: flex; justify-content: space-between; font-size: 12px; color: var(--text2); }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+.mini-stat {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+}
+.mini-stat-label { font-size: 10px; color: var(--text2); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+.mini-stat-val { font-size: 18px; font-weight: 800; margin-top: 5px; }
+
+/* ── Budget limit input ── */
+.budget-limit-card {
+  margin: 14px 20px 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+}
+.budget-limit-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+.budget-input-row { display: flex; gap: 10px; }
+.budget-input-row input {
+  flex: 1;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  color: var(--text);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 16px; outline: none;
+  transition: border-color 0.2s;
+  -webkit-appearance: none;
+}
+.budget-input-row input:focus { border-color: var(--accent); }
+.save-btn {
+  padding: 12px 18px;
+  background: var(--accent);
+  color: #0a0c10;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 14px; font-weight: 800;
+  border: none; border-radius: var(--radius-sm);
+  cursor: pointer; transition: all 0.2s;
+}
+.save-btn:active { transform: scale(0.95); }
+
+/* ── Notif bar ── */
+.notif-bar {
+  display: none;
+  margin: 12px 20px 0;
+  background: rgba(248,113,113,0.1);
+  border: 1px solid rgba(248,113,113,0.25);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  font-size: 13px; color: var(--red);
+  font-weight: 500;
+}
+.notif-bar.show { display: block; }
+
+/* ── Filter chips ── */
+.chip-row { display: flex; gap: 8px; padding: 12px 20px 0; overflow-x: auto; }
+.chip-row::-webkit-scrollbar { display: none; }
+.chip {
+  flex-shrink: 0; padding: 7px 16px;
+  border-radius: 50px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--text2);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s;
+  white-space: nowrap;
+}
+.chip.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+
+/* Empty */
+.empty-state { text-align: center; padding: 40px 20px; color: var(--text2); }
+.empty-state .ei { font-size: 44px; margin-bottom: 10px; }
+.empty-state p { font-size: 14px; }
+
+/* Swipe delete hint */
+.del-btn {
+  background: var(--red-dim);
+  border: none;
+  color: var(--red);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 10px;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.del-btn:active { background: rgba(248,113,113,0.25); }
+.edit-btn {
+  background: rgba(96,165,250,0.12);
+  border: none;
+  color: var(--blue);
+  font-size: 15px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 10px;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.edit-btn:active { background: rgba(96,165,250,0.25); }
+/* Repeat buttons */
+.rep-btn {
+  padding: 8px 13px; border-radius: 50px;
+  border: 1.5px solid var(--border);
+  background: var(--surface2); color: var(--text2);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  transition: all 0.2s;
+}
+.rep-btn.active {
+  background: var(--yellow-dim); border-color: var(--yellow); color: var(--yellow);
+}
+/* Repeat badge on card */
+.rep-badge {
+  display:inline-block; font-size:10px; font-weight:700;
+  padding: 2px 7px; border-radius:20px;
+  background: rgba(251,191,36,0.15); color: var(--yellow);
+  margin-left:6px; vertical-align:middle;
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="status-area"></div>
+
+  <!-- ══════════ HOME ══════════ -->
+  <div class="screen active" id="screen-home">
+
+    <div class="page-header">
+      <div>
+        <div class="page-title">Merhaba 👋</div>
+        <div class="page-sub" id="homeDate"></div>
+      </div>
+      <div class="header-badge" id="homeBadge">Bu ay</div>
+    </div>
+
+    <div id="notifBar" class="notif-bar"></div>
+
+    <!-- Balance Hero -->
+    <div class="balance-hero">
+      <div class="balance-label">NET BAKİYE</div>
+      <div class="balance-amount" id="heroBalance">₺0</div>
+      <div class="balance-row">
+        <div class="bal-stat">
+          <div class="bal-stat-label">Gelir</div>
+          <div class="bal-stat-val g" id="heroIncome">₺0</div>
+        </div>
+        <div class="bal-stat">
+          <div class="bal-stat-label">Gider</div>
+          <div class="bal-stat-val r" id="heroExpense">₺0</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Budget ring -->
+    <div class="budget-card" id="budgetCard" style="display:none">
+      <div class="ring-wrap">
+        <svg width="72" height="72" viewBox="0 0 72 72">
+          <circle class="ring-bg" cx="36" cy="36" r="30"/>
+          <circle class="ring-fill" id="ringFill" cx="36" cy="36" r="30"
+            stroke-dasharray="188.5" stroke-dashoffset="188.5"/>
+        </svg>
+        <div class="ring-text">
+          <span class="ring-pct" id="ringPct">0%</span>
+          <span class="ring-sub-text">KULLANILAN</span>
+        </div>
+      </div>
+      <div class="budget-info">
+        <div class="budget-info-title">Aylık Bütçe</div>
+        <div class="budget-info-sub" id="budgetInfoSub">Limit: ₺0</div>
+        <div class="budget-remaining" id="budgetRemaining">₺0 kaldı</div>
+      </div>
+    </div>
+
+    <!-- Recent TX -->
+    <div class="section-header">
+      <div class="section-title">Son İşlemler</div>
+      <button class="section-link" onclick="goTo('transactions')">Tümü →</button>
+    </div>
+    <div class="tx-mini-list" id="homeTxList"></div>
+
+    <!-- Upcoming reminders -->
+    <div class="section-header">
+      <div class="section-title">Yaklaşan Ödemeler</div>
+      <button class="section-link" onclick="goTo('reminders')">Tümü →</button>
+    </div>
+    <div id="homeRemList"></div>
+    <div style="height:8px;"></div>
+  </div>
+
+  <!-- ══════════ TRANSACTIONS ══════════ -->
+  <div class="screen" id="screen-transactions">
+    <div class="page-header">
+      <div>
+        <div class="page-title">İşlemler</div>
+        <div class="page-sub" id="txCount">0 işlem</div>
+      </div>
+    </div>
+    <div class="chip-row" id="txChips">
+      <div class="chip active" onclick="filterTx('all',this)">Tümü</div>
+      <div class="chip" onclick="filterTx('income',this)">💚 Gelirler</div>
+      <div class="chip" onclick="filterTx('expense',this)">🔴 Giderler</div>
+    </div>
+    <div class="section-header" style="padding-bottom:8px;">
+      <div class="section-title">Listesi</div>
+      <button class="section-link" style="color:var(--red)" onclick="clearAll('tx')">Tümünü Sil</button>
+    </div>
+    <div class="tx-mini-list" id="allTxList" style="padding-bottom:4px;"></div>
+    <div style="height:8px;"></div>
+  </div>
+
+  <!-- ══════════ REMINDERS ══════════ -->
+  <div class="screen" id="screen-reminders">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Hatırlatmalar</div>
+        <div class="page-sub">Ödeme takibi</div>
+      </div>
+    </div>
+    <div class="chip-row" id="remChips">
+      <div class="chip active" onclick="filterRem('all',this)">Tümü</div>
+      <div class="chip" onclick="filterRem('pending',this)">⏳ Bekleyen</div>
+      <div class="chip" onclick="filterRem('done',this)">✅ Ödendi</div>
+    </div>
+    <div class="section-header" style="padding-bottom:8px;">
+      <div class="section-title">Listesi</div>
+      <button class="section-link" style="color:var(--red)" onclick="clearAll('rem')">Tümünü Sil</button>
+    </div>
+    <div id="remList"></div>
+    <div style="height:8px;"></div>
+  </div>
+
+  <!-- ══════════ CATEGORIES / ANALYTICS ══════════ -->
+  <div class="screen" id="screen-categories">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Analiz</div>
+        <div class="page-sub">Harcama dağılımı</div>
+      </div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-box">
+        <div class="stat-box-val" style="color:var(--accent)" id="anIncome">₺0</div>
+        <div class="stat-box-label">Gelir</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-box-val" style="color:var(--red)" id="anExpense">₺0</div>
+        <div class="stat-box-label">Gider</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-box-val" style="color:var(--blue)" id="anTx">0</div>
+        <div class="stat-box-label">İşlem</div>
+      </div>
+    </div>
+    <div class="section-header">
+      <div class="section-title">Kategoriler</div>
+    </div>
+    <div class="cat-grid" id="catGrid"></div>
+    <div style="height:8px;"></div>
+  </div>
+
+  <!-- ══════════ BUDGET ══════════ -->
+  <div class="screen" id="screen-budget">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Bütçe</div>
+        <div class="page-sub">Limit & takip</div>
+      </div>
+    </div>
+
+    <div class="budget-limit-card">
+      <div class="budget-limit-title">Aylık Limit Belirle</div>
+      <div class="budget-input-row">
+        <input type="number" inputmode="numeric" id="budgetLimitInput" placeholder="₺ Tutar girin...">
+        <button class="save-btn" onclick="saveBudget()">Kaydet</button>
+      </div>
+    </div>
+
+    <div class="budget-big-card" id="budgetBigCard">
+      <div style="font-size:12px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Harcanan</div>
+      <div class="big-num" id="budgetSpent">₺0</div>
+      <div class="prog-bar-big"><div class="prog-fill-big" id="budgetProgFill" style="width:0%;background:var(--accent)"></div></div>
+      <div class="prog-labels">
+        <span>₺0</span>
+        <span id="budgetProgPct">0%</span>
+        <span id="budgetProgLimit">₺0</span>
+      </div>
+      <div class="grid2">
+        <div class="mini-stat">
+          <div class="mini-stat-label">Limit</div>
+          <div class="mini-stat-val" style="color:var(--blue)" id="bsLimit">₺0</div>
+        </div>
+        <div class="mini-stat">
+          <div class="mini-stat-label">Kalan</div>
+          <div class="mini-stat-val" id="bsRemaining">₺0</div>
+        </div>
+        <div class="mini-stat">
+          <div class="mini-stat-label">Gelir</div>
+          <div class="mini-stat-val" style="color:var(--accent)" id="bsIncome">₺0</div>
+        </div>
+        <div class="mini-stat">
+          <div class="mini-stat-label">Net Tasarruf</div>
+          <div class="mini-stat-val" id="bsSavings">₺0</div>
+        </div>
+      </div>
+    </div>
+    <div style="height:8px;"></div>
+  </div>
+
+  <!-- ══════════ BOTTOM NAV ══════════ -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" id="nav-home" onclick="goTo('home')">
+      <div class="nav-icon">🏠</div>
+      <div class="nav-label">Ana Sayfa</div>
+    </button>
+    <button class="nav-item" id="nav-transactions" onclick="goTo('transactions')">
+      <div class="nav-icon">💳</div>
+      <div class="nav-label">İşlemler</div>
+    </button>
+    <button class="nav-item" id="nav-reminders" onclick="goTo('reminders')">
+      <div class="nav-icon">🔔</div>
+      <div class="nav-label">Hatırlatma</div>
+    </button>
+    <button class="nav-item" id="nav-categories" onclick="goTo('categories')">
+      <div class="nav-icon">📊</div>
+      <div class="nav-label">Analiz</div>
+    </button>
+    <button class="nav-item" id="nav-budget" onclick="goTo('budget')">
+      <div class="nav-icon">🎯</div>
+      <div class="nav-label">Bütçe</div>
+    </button>
+  </nav>
+
+  <!-- FAB -->
+  <button class="fab" id="fabBtn" onclick="openSheet()">＋</button>
+</div>
+
+<!-- ══════════ BOTTOM SHEET: Add TX ══════════ -->
+<div class="sheet-overlay" id="txSheet" onclick="closeSheet(event)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="sheetTitle">İşlem Ekle</div>
+
+    <div class="form-section">
+      <label class="form-label">Tür</label>
+      <div class="type-toggle">
+        <button class="type-btn sel-expense" id="typeExpense" onclick="setType('expense')">💸 Gider</button>
+        <button class="type-btn" id="typeIncome" onclick="setType('income')">💰 Gelir</button>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <label class="form-label">Açıklama</label>
+      <input class="form-input" type="text" id="txNameIn" placeholder="Market, maaş, kira...">
+    </div>
+
+    <div class="form-section">
+      <label class="form-label">Tutar (₺)</label>
+      <input class="form-input" type="number" inputmode="decimal" id="txAmtIn" placeholder="0,00">
+    </div>
+
+    <div class="form-row2" style="padding: 0 24px; margin-top: 14px;">
+      <div>
+        <label class="form-label">Kategori</label>
+        <select class="form-input" id="txCatIn">
+          <option value="🛒 Market">🛒 Market</option>
+          <option value="🍽️ Yemek">🍽️ Yemek</option>
+          <option value="🚗 Ulaşım">🚗 Ulaşım</option>
+          <option value="🏠 Kira/Fatura">🏠 Kira/Fatura</option>
+          <option value="💊 Sağlık">💊 Sağlık</option>
+          <option value="📚 Eğitim">📚 Eğitim</option>
+          <option value="🎉 Eğlence">🎉 Eğlence</option>
+          <option value="👗 Giyim">👗 Giyim</option>
+          <option value="💰 Maaş">💰 Maaş</option>
+          <option value="📈 Yatırım">📈 Yatırım</option>
+          <option value="📦 Diğer">📦 Diğer</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-label">Tarih</label>
+        <input class="form-input" type="date" id="txDateIn">
+      </div>
+    </div>
+
+    <button class="submit-btn" id="txSaveBtn" onclick="saveTx()">✓ Kaydet</button>
+    <input type="hidden" id="txEditId">
+  </div>
+</div>
+
+<!-- ══════════ BOTTOM SHEET: Add Reminder ══════════ -->
+<div class="sheet-overlay" id="remSheet" onclick="closeRemSheet(event)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Hatırlatma Ekle</div>
+
+    <div class="form-section">
+      <label class="form-label">Başlık</label>
+      <input class="form-input" type="text" id="remTitleIn" placeholder="Kira, elektrik faturası...">
+    </div>
+
+    <div class="form-row2" style="padding:0 24px;margin-top:14px;">
+      <div>
+        <label class="form-label">Tutar (₺)</label>
+        <input class="form-input" type="number" inputmode="decimal" id="remAmtIn" placeholder="0">
+      </div>
+      <div>
+        <label class="form-label">Son Tarih</label>
+        <input class="form-input" type="date" id="remDateIn">
+      </div>
+    </div>
+
+    <div class="form-section" style="margin-top:14px;">
+      <label class="form-label">Kategori</label>
+      <select class="form-input" id="remTypeIn">
+        <option value="🏠 Kira">🏠 Kira</option>
+        <option value="⚡ Elektrik">⚡ Elektrik</option>
+        <option value="💧 Su">💧 Su</option>
+        <option value="🔥 Doğalgaz">🔥 Doğalgaz</option>
+        <option value="📱 Telefon">📱 Telefon</option>
+        <option value="🌐 İnternet">🌐 İnternet</option>
+        <option value="💳 Kredi Kartı">💳 Kredi Kartı</option>
+        <option value="🏦 Kredi Taksidi">🏦 Kredi Taksidi</option>
+        <option value="📦 Diğer">📦 Diğer</option>
+      </select>
+    </div>
+
+    <div class="form-section" style="margin-top:14px;">
+      <label class="form-label">🔄 Tekrar</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;padding:0 24px;margin-top:6px;">
+        <button class="rep-btn active" id="rep-none"    onclick="setRepeat('none',this)">🚫 Tek seferlik</button>
+        <button class="rep-btn"        id="rep-monthly" onclick="setRepeat('monthly',this)">📆 Her ay</button>
+        <button class="rep-btn"        id="rep-yearly"  onclick="setRepeat('yearly',this)">🗓️ Her yıl</button>
+      </div>
+    </div>
+
+    <div id="repCountWrap" style="display:none;padding:0 24px;margin-top:12px;">
+      <label class="form-label">Kaç kez tekrarlansın?</label>
+      <select class="form-input" id="remRepCount">
+        <option value="3">3 ay</option>
+        <option value="6">6 ay</option>
+        <option value="12" selected>12 ay (1 yıl)</option>
+        <option value="24">24 ay (2 yıl)</option>
+        <option value="36">36 ay (3 yıl)</option>
+        <option value="60">60 ay (5 yıl)</option>
+      </select>
+    </div>
+
+    <button class="submit-btn" id="remSaveBtn" onclick="saveReminder()" style="background:var(--yellow);color:#0a0c10;">🔔 Ekle</button>
+    <input type="hidden" id="remEditId">
+  </div>
+</div>
+
+<script>
+// -- State --
+const S = {
+  tx: JSON.parse(localStorage.getItem('ba_tx')||'[]'),
+  rem: JSON.parse(localStorage.getItem('ba_rem')||'[]'),
+  budget: parseFloat(localStorage.getItem('ba_budget')||'0'),
+  txFilter: 'all',
+  remFilter: 'all',
+  currentTab: 'home',
+  sheetType: 'tx',
+  repType: 'none'
+};
+const save = () => {
+  localStorage.setItem('ba_tx', JSON.stringify(S.tx));
+  localStorage.setItem('ba_rem', JSON.stringify(S.rem));
+  localStorage.setItem('ba_budget', S.budget);
+};
+const fmt = n => '₺' + parseFloat(n||0).toLocaleString('tr-TR',{minimumFractionDigits:0,maximumFractionDigits:0});
+const today = () => new Date().toISOString().split('T')[0];
+
+// -- Init --
+window.onload = () => {
+  document.getElementById('txDateIn').value = today();
+  document.getElementById('remDateIn').value = today();
+  document.getElementById('budgetLimitInput').value = S.budget || '';
+  document.getElementById('homeDate').textContent = new Date().toLocaleDateString('tr-TR',{weekday:'long',day:'numeric',month:'long'});
+  setType('expense');
+  render();
+  checkNotif();
+};
+
+// -- Navigation --
+function goTo(tab) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('screen-'+tab).classList.add('active');
+  document.getElementById('nav-'+tab).classList.add('active');
+  S.currentTab = tab;
+
+  // FAB visibility and context
+  const fabBtn = document.getElementById('fabBtn');
+  if (tab === 'reminders') {
+    fabBtn.textContent = '🔔';
+    fabBtn.style.display = 'flex';
+  } else if (tab === 'budget' || tab === 'categories') {
+    fabBtn.style.display = 'none';
+  } else {
+    fabBtn.textContent = '＋';
+    fabBtn.style.display = 'flex';
+  }
+  render();
+}
+
+// -- Sheets --
+function openSheet() {
+  if (S.currentTab === 'reminders') {
+    document.getElementById('remSheet').classList.add('open');
+  } else {
+    document.getElementById('txSheet').classList.add('open');
+  }
+}
+function closeSheet(e) {
+  if (e.target === document.getElementById('txSheet')) {
+    document.getElementById('txSheet').classList.remove('open');
+    document.getElementById('txEditId').value = '';
+    document.getElementById('sheetTitle').textContent = 'Islem Ekle';
+    document.getElementById('txSaveBtn').textContent = '✓ Kaydet';
+  }
+}
+function closeRemSheet(e) {
+  if (e.target === document.getElementById('remSheet')) {
+    resetRemSheet();
+  }
+}
+
+// -- Type toggle --
+let currentType = 'expense';
+function setType(t) {
+  currentType = t;
+  const eBtn = document.getElementById('typeExpense');
+  const iBtn = document.getElementById('typeIncome');
+  eBtn.className = 'type-btn' + (t==='expense'?' sel-expense':'');
+  iBtn.className = 'type-btn' + (t==='income'?' sel-income':'');
+}
+
+// -- Add / Edit TX --
+function saveTx() {
+  const name  = document.getElementById('txNameIn').value.trim();
+  const amt   = parseFloat(document.getElementById('txAmtIn').value);
+  const cat   = document.getElementById('txCatIn').value;
+  const date  = document.getElementById('txDateIn').value;
+  const editId = document.getElementById('txEditId').value;
+  if (!name || !amt || !date) { alert('Lutfen tum alanlari doldurun!'); return; }
+
+  if (editId) {
+    const t = S.tx.find(t => t.id === parseInt(editId));
+    if (t) { t.name=name; t.amount=amt; t.type=currentType; t.category=cat; t.date=date; }
+    showToast('✏️ Islem guncellendi!');
+  } else {
+    S.tx.unshift({id:Date.now(), name, amount:amt, type:currentType, category:cat, date});
+    showToast('✅ Islem eklendi!');
+  }
+  save(); render();
+  document.getElementById('txNameIn').value = '';
+  document.getElementById('txAmtIn').value = '';
+  document.getElementById('txEditId').value = '';
+  document.getElementById('sheetTitle').textContent = 'Islem Ekle';
+  document.getElementById('txSaveBtn').textContent = '✓ Kaydet';
+  document.getElementById('txSheet').classList.remove('open');
+  checkNotif();
+}
+
+function editTx(id) {
+  const t = S.tx.find(t => t.id === id);
+  if (!t) return;
+  document.getElementById('txNameIn').value  = t.name;
+  document.getElementById('txAmtIn').value   = t.amount;
+  document.getElementById('txCatIn').value   = t.category;
+  document.getElementById('txDateIn').value  = t.date;
+  document.getElementById('txEditId').value  = id;
+  document.getElementById('sheetTitle').textContent = '✏️ Islemi Duzenle';
+  document.getElementById('txSaveBtn').textContent  = '✓ Guncelle';
+  setType(t.type);
+  document.getElementById('txSheet').classList.add('open');
+}
+
+// -- Repeat toggle --
+function setRepeat(type, el) {
+  S.repType = type;
+  document.querySelectorAll('.rep-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('repCountWrap').style.display = (type === 'monthly') ? 'block' : 'none';
+}
+
+// -- Add / Edit Reminder --
+function saveReminder() {
+  const title  = document.getElementById('remTitleIn').value.trim();
+  const amt    = parseFloat(document.getElementById('remAmtIn').value)||0;
+  const date   = document.getElementById('remDateIn').value;
+  const type   = document.getElementById('remTypeIn').value;
+  const rep    = S.repType;
+  const count  = parseInt(document.getElementById('remRepCount').value)||12;
+  const editId = document.getElementById('remEditId').value;
+  if (!title || !date) { alert('Lutfen baslik ve tarihi doldurun!'); return; }
+
+  if (editId) {
+    // Edit mode — just update this single entry
+    const r = S.rem.find(r => r.id === parseInt(editId));
+    if (r) { r.title=title; r.amount=amt; r.date=date; r.type=type; }
+    showToast('✏️ Hatirlatma guncellendi!');
+    save(); render();
+    resetRemSheet();
+    checkNotif();
+    return;
+  }
+
+  // Add mode
+  const groupId = Date.now();
+  if (rep === 'monthly') {
+    for (let i = 0; i < count; i++) {
+      const d = new Date(date + 'T12:00:00');
+      d.setMonth(d.getMonth() + i);
+      S.rem.push({ id: groupId + i, title, amount: amt, date: d.toISOString().split('T')[0], type, done: false, repeat: 'monthly', groupId, repIndex: i, repTotal: count });
+    }
+    showToast(`🔔 ${count} aylik hatirlatma olusturuldu!`);
+  } else if (rep === 'yearly') {
+    for (let i = 0; i < 5; i++) {
+      const d = new Date(date + 'T12:00:00');
+      d.setFullYear(d.getFullYear() + i);
+      S.rem.push({ id: groupId + i, title, amount: amt, date: d.toISOString().split('T')[0], type, done: false, repeat: 'yearly', groupId, repIndex: i, repTotal: 5 });
+    }
+    showToast('🔔 5 yillik hatirlatma olusturuldu!');
+  } else {
+    S.rem.unshift({ id: groupId, title, amount: amt, date, type, done: false, repeat: 'none' });
+    showToast('🔔 Hatirlatma eklendi!');
+  }
+
+  save(); render();
+  resetRemSheet();
+  checkNotif();
+}
+
+function editRem(id) {
+  const r = S.rem.find(r => r.id === id);
+  if (!r) return;
+  document.getElementById('remTitleIn').value = r.title;
+  document.getElementById('remAmtIn').value   = r.amount || '';
+  document.getElementById('remDateIn').value  = r.date;
+  document.getElementById('remTypeIn').value  = r.type;
+  document.getElementById('remEditId').value  = id;
+  document.querySelector('#remSheet .sheet-title').textContent = '✏️ Hatirlatmayi Duzenle';
+  document.getElementById('remSaveBtn').textContent = '✓ Guncelle';
+  // Hide repeat section in edit mode
+  document.getElementById('repCountWrap').style.display = 'none';
+  document.querySelectorAll('.rep-btn').forEach(b=>b.style.opacity='0.3');
+  document.getElementById('remSheet').classList.add('open');
+}
+
+function resetRemSheet() {
+  document.getElementById('remTitleIn').value = '';
+  document.getElementById('remAmtIn').value   = '';
+  document.getElementById('remEditId').value  = '';
+  document.querySelector('#remSheet .sheet-title').textContent = 'Hatirlatma Ekle';
+  document.getElementById('remSaveBtn').textContent = '🔔 Ekle';
+  S.repType = 'none';
+  document.querySelectorAll('.rep-btn').forEach(b => { b.classList.remove('active'); b.style.opacity=''; });
+  document.getElementById('rep-none').classList.add('active');
+  document.getElementById('repCountWrap').style.display = 'none';
+  document.getElementById('remSheet').classList.remove('open');
+}
+// Sil: tekrarlayan grubun tumunu sil
+function deleteRepeatGroup(groupId) {
+  if (!confirm('Bu serinin tum hatirlatmalari silinsin mi?')) return;
+  S.rem = S.rem.filter(r => r.groupId !== groupId);
+  save(); render(); checkNotif();
+}
+
+function toggleRem(id) {
+  const r = S.rem.find(r=>r.id===id);
+  if(r){r.done=!r.done; save(); render(); checkNotif();}
+}
+function deleteTx(id) { S.tx=S.tx.filter(t=>t.id!==id); save(); render(); }
+function deleteRem(id) { S.rem=S.rem.filter(r=>r.id!==id); save(); render(); checkNotif(); }
+function clearAll(type) {
+  if(!confirm('Tümünü silmek istediğinize emin misiniz?')) return;
+  if(type==='tx') S.tx=[];
+  if(type==='rem') S.rem=[];
+  save(); render();
+}
+
+// -- Budget --
+function saveBudget() {
+  S.budget = parseFloat(document.getElementById('budgetLimitInput').value)||0;
+  save(); render();
+  const b = document.querySelector('.save-btn');
+  b.textContent = '✅'; setTimeout(()=>b.textContent='Kaydet',1500);
+}
+
+// -- Filters --
+function filterTx(f,el) {
+  S.txFilter=f;
+  document.querySelectorAll('#txChips .chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  renderTxList();
+}
+function filterRem(f,el) {
+  S.remFilter=f;
+  document.querySelectorAll('#remChips .chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  renderRemList();
+}
+
+// -- Urgency --
+function urgency(date, done) {
+  if(done) return {cls:'done-card', color:'#475569', dot:'#475569'};
+  const diff = (new Date(date)-new Date())/86400000;
+  if(diff<0) return {cls:'urgent', color:'var(--red)', dot:'var(--red)', tag:'⚠️ Geçti'};
+  if(diff<=2) return {cls:'urgent', color:'var(--red)', dot:'var(--red)', tag:'🔴 Acil'};
+  if(diff<=7) return {cls:'soon', color:'var(--yellow)', dot:'var(--yellow)', tag:'🟡 Yakında'};
+  return {cls:'', color:'var(--accent)', dot:'var(--accent)', tag:'✅ Tamam'};
+}
+
+// -- Toast --
+let _toastTimer;
+function showToast(msg, color='var(--accent)') {
+  let el = document.getElementById('appToast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'appToast';
+    el.style.cssText = 'position:fixed;bottom:calc(74px + env(safe-area-inset-bottom,0px) + 60px);left:50%;transform:translateX(-50%) translateY(20px);background:#1a2a1a;border:1.5px solid var(--accent);color:var(--accent);font-family:Plus Jakarta Sans,sans-serif;font-size:13px;font-weight:700;padding:11px 20px;border-radius:50px;white-space:nowrap;z-index:9999;opacity:0;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,0.4)';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.style.borderColor = color;
+  el.style.color = color;
+  clearTimeout(_toastTimer);
+  setTimeout(() => { el.style.opacity='1'; el.style.transform='translateX(-50%) translateY(0)'; }, 10);
+  _toastTimer = setTimeout(() => { el.style.opacity='0'; el.style.transform='translateX(-50%) translateY(20px)'; }, 2500);
+}
+
+// -- Notif --
+function checkNotif() {
+  const bar = document.getElementById('notifBar');
+  const urgent = S.rem.filter(r=>!r.done && r.date<=today());
+  if(urgent.length>0) {
+    bar.textContent = `🔔 ${urgent.length} acil ödemeniz var: ${urgent.map(r=>r.title).join(', ')}`;
+    bar.classList.add('show');
+  } else { bar.classList.remove('show'); }
+}
+
+// -- RENDER --
+function render() { renderHome(); renderTxList(); renderRemList(); renderCats(); renderBudget(); }
+
+function txCardHTML(t, showDel=true) {
+  const emoji = t.category.split(' ')[0];
+  const catName = t.category.split(' ').slice(1).join(' ');
+  const dateStr = new Date(t.date).toLocaleDateString('tr-TR',{day:'numeric',month:'short'});
+  const isIncome = t.type==='income';
+  const bgColor = isIncome ? 'rgba(74,222,128,0.12)' : 'rgba(248,113,113,0.08)';
+  return `<div class="tx-card">
+    <div class="tx-icon-wrap" style="background:${bgColor}">${emoji}</div>
+    <div class="tx-card-info">
+      <div class="tx-card-name">${t.name}</div>
+      <div class="tx-card-meta">${catName} · ${dateStr}</div>
+    </div>
+    <div class="tx-card-amount ${isIncome?'pos':'neg'}">${isIncome?'+':'−'}${fmt(t.amount)}</div>
+    ${showDel?`<button class="edit-btn" onclick="editTx(${t.id})" title="Duzenle">✏️</button><button class="del-btn" onclick="deleteTx(${t.id})">✕</button>`:''}
+  </div>`;
+}
+
+function renderHome() {
+  const income = S.tx.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+  const expense = S.tx.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
+  const net = income - expense;
+  const bal = document.getElementById('heroBalance');
+  bal.textContent = fmt(net);
+  bal.className = 'balance-amount ' + (net>=0?'positive':'negative');
+  document.getElementById('heroIncome').textContent = fmt(income);
+  document.getElementById('heroExpense').textContent = fmt(expense);
+
+  // Budget ring
+  const bc = document.getElementById('budgetCard');
+  if(S.budget > 0) {
+    bc.style.display = 'flex';
+    const pct = Math.min(100, expense/S.budget*100);
+    const circ = 188.5;
+    const fill = document.getElementById('ringFill');
+    const color = pct>90?'var(--red)':pct>70?'var(--yellow)':'var(--accent)';
+    fill.style.stroke = color;
+    setTimeout(()=>{ fill.style.strokeDashoffset = circ - (circ*pct/100); },50);
+    document.getElementById('ringPct').textContent = Math.round(pct)+'%';
+    document.getElementById('ringPct').style.color = color;
+    document.getElementById('budgetInfoSub').textContent = `Limit: ${fmt(S.budget)}`;
+    const rem = S.budget - expense;
+    const remEl = document.getElementById('budgetRemaining');
+    remEl.textContent = rem>=0 ? fmt(rem)+' kaldı' : fmt(Math.abs(rem))+' aşıldı!';
+    remEl.style.color = rem>=0?'var(--accent)':'var(--red)';
+  } else { bc.style.display = 'none'; }
+
+  // Recent TX
+  const list = document.getElementById('homeTxList');
+  const recent = S.tx.slice(0,4);
+  list.innerHTML = recent.length ? recent.map(t=>txCardHTML(t,false)).join('') :
+    '<div class="empty-state"><div class="ei">💸</div><p>Henüz işlem yok.<br>+ butonuna basın!</p></div>';
+
+  // Upcoming reminders
+  const rList = document.getElementById('homeRemList');
+  const upcoming = S.rem.filter(r=>!r.done).sort((a,b)=>new Date(a.date)-new Date(b.date)).slice(0,3);
+  rList.innerHTML = upcoming.length ? upcoming.map(r=>remCardHTML(r,false)).join('') :
+    '<div class="empty-state"><div class="ei">🎉</div><p>Bekleyen ödeme yok</p></div>';
+}
+
+function renderTxList() {
+  let txs = S.tx;
+  if(S.txFilter==='income') txs = txs.filter(t=>t.type==='income');
+  if(S.txFilter==='expense') txs = txs.filter(t=>t.type==='expense');
+  document.getElementById('txCount').textContent = txs.length + ' işlem';
+  const el = document.getElementById('allTxList');
+  el.innerHTML = txs.length ? txs.map(t=>txCardHTML(t,true)).join('') :
+    '<div class="empty-state"><div class="ei">💸</div><p>İşlem bulunamadı</p></div>';
+}
+
+function remCardHTML(r, showDel=true) {
+  const urg = urgency(r.date, r.done);
+  const emoji = r.type.split(' ')[0];
+  const dateStr = new Date(r.date).toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric'});
+  const diff = Math.ceil((new Date(r.date)-new Date())/86400000);
+  const diffStr = r.done ? 'Odendi' : diff<0 ? Math.abs(diff)+' gun gecti' : diff===0 ? 'Bugun!' : diff+' gun kaldi';
+  const repLabel = r.repeat === 'monthly' ? `<span class="rep-badge">🔄 Aylik ${r.repIndex+1}/${r.repTotal}</span>` :
+                   r.repeat === 'yearly'  ? `<span class="rep-badge">📅 Yillik ${r.repIndex+1}/${r.repTotal}</span>` : '';
+  const editBtn = `<button class="edit-btn" onclick="editRem(${r.id})" title="Duzenle">✏️</button>`;
+  const delBtn = r.repeat !== 'none' && r.groupId
+    ? `<button class="del-btn" onclick="deleteRepeatGroup(${r.groupId})" style="padding:6px" title="Tum seriyi sil">🗑</button>`
+    : `<button class="del-btn" onclick="deleteRem(${r.id})" style="padding:6px">✕</button>`;
+  return `<div class="rem-card ${urg.cls}">
+    <div class="rem-icon">${emoji}</div>
+    <div class="rem-body">
+      <div class="rem-title ${r.done?'done-text':''}">${r.title}${repLabel}</div>
+      <div class="rem-date">📅 ${dateStr} · ${diffStr}</div>
+      ${r.amount>0?`<div class="rem-amount">${fmt(r.amount)}</div>`:''}
+    </div>
+    <div class="rem-right">
+      <div class="urgency-dot" style="background:${urg.dot}"></div>
+      <button class="check-btn ${r.done?'checked':''}" onclick="toggleRem(${r.id})">${r.done?'✓':''}</button>
+      ${showDel ? editBtn + delBtn : ''}
+    </div>
+  </div>`;
+}
+
+function renderRemList() {
+  let rems = S.rem;
+  if(S.remFilter==='pending') rems = rems.filter(r=>!r.done);
+  if(S.remFilter==='done') rems = rems.filter(r=>r.done);
+  rems = rems.sort((a,b)=>a.done-b.done || new Date(a.date)-new Date(b.date));
+  const el = document.getElementById('remList');
+  el.innerHTML = rems.length ? rems.map(r=>remCardHTML(r,true)).join('') :
+    '<div class="empty-state"><div class="ei">🔔</div><p>Hatırlatma bulunamadı</p></div>';
+}
+
+function renderCats() {
+  const income = S.tx.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+  const expense = S.tx.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
+  document.getElementById('anIncome').textContent = fmt(income);
+  document.getElementById('anExpense').textContent = fmt(expense);
+  document.getElementById('anTx').textContent = S.tx.length;
+  const cats = {};
+  S.tx.filter(t=>t.type==='expense').forEach(t=>{ cats[t.category]=(cats[t.category]||0)+t.amount; });
+  const entries = Object.entries(cats).sort((a,b)=>b[1]-a[1]);
+  const max = entries[0]?.[1]||1;
+  const colors = ['#4ade80','#60a5fa','#fbbf24','#f87171','#a78bfa','#fb923c','#34d399'];
+  const el = document.getElementById('catGrid');
+  el.innerHTML = entries.length ? entries.map(([cat,amt],i)=>`
+    <div class="cat-row">
+      <div class="cat-emoji-box">${cat.split(' ')[0]}</div>
+      <div class="cat-row-info">
+        <div class="cat-row-name">${cat.split(' ').slice(1).join(' ')}</div>
+        <div class="cat-bar-wrap"><div class="cat-bar-fill" style="width:${Math.round(amt/max*100)}%;background:${colors[i%colors.length]}"></div></div>
+      </div>
+      <div class="cat-row-amt" style="color:${colors[i%colors.length]}">${fmt(amt)}</div>
+    </div>`).join('') :
+    '<div class="empty-state"><div class="ei">📊</div><p>Gider verisi yok</p></div>';
+}
+
+function renderBudget() {
+  const expense = S.tx.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
+  const income = S.tx.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+  const net = income - expense;
+  const pct = S.budget>0 ? Math.min(100, expense/S.budget*100) : 0;
+  const color = pct>90?'var(--red)':pct>70?'var(--yellow)':'var(--accent)';
+  document.getElementById('budgetSpent').textContent = fmt(expense);
+  document.getElementById('budgetSpent').style.color = color;
+  document.getElementById('budgetProgFill').style.width = pct+'%';
+  document.getElementById('budgetProgFill').style.background = color;
+  document.getElementById('budgetProgPct').textContent = Math.round(pct)+'%';
+  document.getElementById('budgetProgLimit').textContent = fmt(S.budget||0);
+  document.getElementById('bsLimit').textContent = fmt(S.budget||0);
+  const rem = S.budget - expense;
+  const remEl = document.getElementById('bsRemaining');
+  remEl.textContent = S.budget ? (rem>=0?fmt(rem):fmt(Math.abs(rem))+' aşıldı!') : '—';
+  remEl.style.color = rem>=0?'var(--accent)':'var(--red)';
+  document.getElementById('bsIncome').textContent = fmt(income);
+  const savEl = document.getElementById('bsSavings');
+  savEl.textContent = fmt(Math.abs(net)) + (net<0?' açık':'');
+  savEl.style.color = net>=0?'var(--accent)':'var(--red)';
+}
+</script>
+</body>
+</html>
